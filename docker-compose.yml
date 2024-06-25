@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  eureka-server:
+    build:
+      context: ./EurekaService
+      dockerfile: Dockerfile
+    image: eureka-server:latest
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    
+  gateway-api:
+    build:
+      context: ./GatewayService
+      dockerfile: Dockerfile
+    image: gateway-api:latest
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    depends_on:
+      - eureka-server
+      - timeseries-service
+      - relational-service
+    ports:
+      - "9000:9000"
+    
+  relational-service:
+    build:
+      context: ./backend/enviro-net
+      dockerfile: Dockerfile
+    image: relational-service:latest
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started  # Wait for eureka-server to be started
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresdb:5432/environet"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: super
+      JWT_SECRET: 4300e200572625f7a49947c7f5ef95bfcd4311b4bac1977740c45d793ebb3500
+      #SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      # DATABASE_HOST: postgresdb
+      # DATABASE_PORT: 5432
+      # DATABASE_PASSWORD: super
+      # DATABASE_USER: postgres
+      # DATABASE_SCHEMA: environet
+      # EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      # SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresdb:5432/environet"
+      # SPRING_DATASOURCE_USERNAME: postgres
+      # SPRING_DATASOURCE_PASSWORD: super
+    ports:
+      - "8080:8080"
+    # networks:
+    #   - database
+    #   # - environet_database
+
+  postgresdb:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: super
+      POSTGRES_DB: environet
+    # volumes:
+    #   - data:/var/lib/postgresql/data
+    #   - ./initdb:/docker-entrypoint-initdb.d
+    volumes:
+      - type: volume
+        source: environet-data
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: init.sql
+        target: /tmp/environet-init.sql
+    ports:
+      - "5432:5432"
+    # networks:
+    #   - database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  timeseries-service:
+    build:
+      context: ./TimeseriesDatabaseService
+      dockerfile: Dockerfile
+    image: timeseries-example:latest
+    restart: on-failure
+    depends_on:
+      - eureka-server
+      - influxdb
+    environment:
+      SPRING_INFLUX_URL: http://influxdb:8086
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    ports:
+      - '9090:9090'
+    
+  influxdb:
+    image: influxdb:2.7.6
+    ports:
+      - '8086:8086'
+    volumes:
+      - influxdb-storage:/var/lib/influxdb
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=nais
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_ORG=nais_org
+      - DOCKER_INFLUXDB_INIT_BUCKET=nais_bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+
+volumes:
+  environet-data:
+    name: environet-data
+  data:
+  influxdb-storage:
+
+networks:
+  database:
+    driver: bridge

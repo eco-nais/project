@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  environet-migration:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: migration
+    networks:
+      - database
+    environment:
+      DATABASE_HOST: postgresdb
+      DATABASE_PORT: 5432
+      DATABASE_PASSWORD: super
+      DATABASE_USER: postgres
+      DATABASE_SCHEMA: environet
+
+networks:
+  database:
+    name: environet_database
+    driver: bridge
+    external: true

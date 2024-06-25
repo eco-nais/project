@@ -1,0 +1,72 @@
+server:
+  port: 8080
+  ssl:
+    enabled: false
+    key-store-password: changeit
+
+baseFrontUrl: http://localhost:4200
+
+# Set somewhere else on your PC and add Templates folder there
+projectFilePath: C:\\Users\\Nina\\OneDrive\\Desktop\\Projects
+
+spring:
+  application:
+    name: enviro-net
+
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/environet
+    username: postgres
+    password: super
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create  # This creates schema and tables
+      format_sql: true
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyHbmImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      properties:
+        hibernate:
+          format_sql: true
+    defer-datasource-initialization: true
+
+  jwt:
+    secret: ${JWT_SECRET}
+
+  sql:
+    init:
+      mode: always
+      data-locations: 
+        - classpath:db/create_next_versions_table.sql
+        - classpath:data.sql
+        - classpath:db/insert_projects_scheme.sql
+        - classpath:db/insert_finance.scheme.sql
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: environet.eco@gmail.com
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  #   healthcheck:
+  #     enabled: true
+  # instance:
+  #   prefer-ip-address: true
