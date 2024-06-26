@@ -16,10 +16,10 @@ import com.influxdb.exceptions.InfluxException;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import com.influxdb.client.DeleteApi;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import rs.ac.uns.acs.nais.TimeseriesDatabaseService.model.Purchase;
+import rs.ac.uns.acs.nais.TimeseriesDatabaseService.model.FixedExpenses;
 
 
 @Component
@@ -175,5 +175,94 @@ public class InfluxDBConnectionClass {
             System.out.println("InfluxException: " + ie);
         }
         return flag;
+    }
+
+    // FixedExpenses
+    public boolean saveFixedExpense(InfluxDBClient influxDBClient, FixedExpenses fixedExpense) {
+        boolean flag = false;
+        try {
+            WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
+            fixedExpense.setCreated(Instant.now()); // Set current time as createdOn timestamp
+
+            Point point = Point.measurement("fixed_expenses")
+                    .addField("_value", fixedExpense.get_value())
+                    .addField("_field", fixedExpense.get_field())
+                    .addTag("creator_id", fixedExpense.getCreator_id())
+                    .addField("deleted", fixedExpense.getDeleted())
+                    .addTag("employee", fixedExpense.getEmployee().toString()) // Add employee as a tag
+                    .addField("_overtime_hours", fixedExpense.get_overtime_hours()) // Add overtime_hours as a field
+                    .addField("_start_date", fixedExpense.get_start_date())
+                    .addField("_end_date", fixedExpense.get_end_date())
+                    .addField("_description", fixedExpense.get_description())
+
+                    .time(fixedExpense.getCreated(), WritePrecision.MS);
+
+            writeApi.writePoint(point);
+            System.out.println("Saved new fixed expense!");
+            flag = true;
+        } catch (InfluxException e) {
+            System.out.println("Exception while saving fixed expense: " + e.getMessage());
+        }
+        return flag;
+    }
+
+    public boolean deleteFixedExpensesByCreatorId(InfluxDBClient influxDBClient, String creatorId) {
+        boolean flag = false;
+        DeleteApi deleteApi = influxDBClient.getDeleteApi();
+
+        try {
+            OffsetDateTime start = OffsetDateTime.now().minus(72, ChronoUnit.HOURS);
+            OffsetDateTime stop = OffsetDateTime.now();
+            String predicate = "_measurement=\"fixed_expenses\" AND creator_id = \"" +
+                    creatorId +
+                    "\"";
+
+            deleteApi.delete(start, stop, predicate, bucket, org);
+
+            flag = true;
+        } catch (InfluxException ie) {
+            System.out.println("InfluxException while deleting fixed expenses: " + ie);
+        }
+        return flag;
+    }
+
+    // TODO
+    private List<FixedExpenses> getFixedExpenses(QueryApi queryApi, String flux) {
+        List<FixedExpenses> fixedExpenses = new ArrayList<>();
+        List<FluxTable> tables = queryApi.query(flux);
+        for (FluxTable fluxTable : tables) {
+            List<FluxRecord> records = fluxTable.getRecords();
+            for (FluxRecord fluxRecord : records) {
+                FixedExpenses fixedExpense = new FixedExpenses();
+                fixedExpense.setCreated((Instant) fluxRecord.getValueByKey("_time"));
+                fixedExpense.set_value((Double) fluxRecord.getValueByKey("_value"));
+                fixedExpense.set_field((String) fluxRecord.getValueByKey("_field"));
+                fixedExpense.setCreator_id((String) fluxRecord.getValueByKey("creator_id"));
+                fixedExpense.setDeleted((Boolean) fluxRecord.getValueByKey("deleted"));
+                fixedExpense.setEmployee((Integer) fluxRecord.getValueByKey("employee"));
+                fixedExpense.set_overtime_hours((Double) fluxRecord.getValueByKey("_overtime_hours"));
+                fixedExpense.set_start_date((String) fluxRecord.getValueByKey("_start_date"));
+                fixedExpense.set_end_date((String) fluxRecord.getValueByKey("_end_date"));
+                fixedExpense.set_description((String) fluxRecord.getValueByKey("_description"));
+
+                fixedExpenses.add(fixedExpense);
+            }
+        }
+        return fixedExpenses;
+    }
+
+    public List<FixedExpenses> findAllFixedExpenses(InfluxDBClient influxDBClient) {
+        String flux = "from(bucket:\"nais_bucket\") |> range(start:0) |> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\") |> sort() |> yield(name: \"sort\")";
+        QueryApi queryApi = influxDBClient.getQueryApi();
+        List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
+        return fixedExpenses;
+    }
+
+    public List<FixedExpenses> findAllByCreatorId(InfluxDBClient influxDBClient, String creatorId) {
+        String fluxForCreator = "from(bucket:\"nais_bucket\") |> range(start:0) |> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"creator_id\"] == \"%s\") |> sort() |> yield(name: \"sort\")";
+        String queryForCreator = String.format(fluxForCreator, creatorId);
+        QueryApi queryApi = influxDBClient.getQueryApi();
+        List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, queryForCreator);
+        return fixedExpenses;
     }
 }
