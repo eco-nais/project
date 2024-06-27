@@ -169,10 +169,48 @@ public class InfluxDBConnectionClass {
                 "|> group(columns: [\"start_date\"]) " +
                 "|> sum(column: \"_value\") " +
                 "|> sort(columns: [\"_value\"], desc: true) " +
-                //"|> keep(columns: [\"_time\", \"_value\", \"_field\", \"_measurement\", \"start_date\", \"end_date\", \"employee\", \"creator_id\", \"description\"])",
                 startDate, field);
 
                 QueryApi queryApi = influxDBClient.getQueryApi();
+        List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
+        return fixedExpenses;
+    }
+
+    public List<FixedExpenses> aggregateByCreator(InfluxDBClient influxDBClient, String startDate, String endDate, String field) {
+        String flux = "";
+        if (startDate == null) {
+            flux = String.format(
+                    "from(bucket:\"nais_bucket\") " +
+                            "|> range(start: 0)" +
+                            "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"_field\"] == \"%s\") " +
+                            "|> window(every: 1mo) " +
+                            "|> group(columns: [\"creator_id\"]) " + // Group by creator_id
+                            "|> mean(column: \"_value\") " + // Perform aggregation, e.g., sum // i would like some other type of aggreagation please
+                            "|> sort(columns: [\"creator_id\"], desc: true)", // Sort the results by _value in descending order
+                    field);
+        } else if (startDate != null && endDate == null) {
+            flux = String.format(
+                    "from(bucket:\"nais_bucket\") " +
+                            "|> range(start: %s)" +
+                            "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"_field\"] == \"%s\") " +
+                            "|> window(every: 1mo) " +
+                            "|> group(columns: [\"creator_id\"]) " + // Group by creator_id
+                            "|> mean(column: \"_value\") " + // Perform aggregation, e.g., sum // i would like some other type of aggreagation please
+                            "|> sort(columns: [\"creator_id\"], desc: true)", // Sort the results by _value in descending order
+                    startDate, field);
+        } else {
+            flux = String.format(
+                    "from(bucket:\"nais_bucket\") " +
+                            "|> range(start: %s, stop: %s)" +
+                            "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"_field\"] == \"%s\") " +
+                            "|> window(every: 1mo) " +
+                            "|> group(columns: [\"creator_id\"]) " + // Group by creator_id
+                            "|> mean(column: \"_value\") " + // Perform aggregation, e.g., sum // i would like some other type of aggreagation please
+                            "|> sort(columns: [\"creator_id\"], desc: true)", // Sort the results by _value in descending order
+                    startDate, endDate, field);
+        }
+
+        QueryApi queryApi = influxDBClient.getQueryApi();
         List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
         return fixedExpenses;
     }

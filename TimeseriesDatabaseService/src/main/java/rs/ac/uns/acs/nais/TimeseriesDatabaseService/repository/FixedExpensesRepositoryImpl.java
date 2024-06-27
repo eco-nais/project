@@ -42,4 +42,12 @@ public class FixedExpensesRepositoryImpl implements FixedExpensesRepository {
         influxDBClient.close();
         return result;
     }
+
+    @Override
+    public List<FixedExpenses> aggregateByCreator(String startDate, String endDate, String field) {
+        InfluxDBClient influxDBClient = inConn.buildConnection();
+        List<FixedExpenses> result = inConn.aggregateByCreator(influxDBClient, startDate, endDate, field);
+        influxDBClient.close();
+        return result;
+    }
 }

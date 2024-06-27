@@ -39,7 +39,15 @@ public class FixedExpensesController {
     }
 
     @GetMapping("monthly")
-    public ResponseEntity<List<FixedExpenses>> findAll(@RequestParam("start_date") String start_date, @RequestParam("field") String field) {
+    public ResponseEntity<List<FixedExpenses>> monthly(@RequestParam("start_date") String start_date, @RequestParam("field") String field) {
         return new ResponseEntity<>(service.monthlySum(start_date, field), HttpStatus.OK);
+    }
+
+    @GetMapping("aggregateByCreator")
+    public ResponseEntity<List<FixedExpenses>> aggregateByCreator(
+            @RequestParam(value = "start_date", defaultValue = "0") String start_date,
+            @RequestParam(value = "end_date", required = false) String end_date,
+            @RequestParam(value = "field", defaultValue = "SALARY") String field) {
+        return new ResponseEntity<>(service.aggregateByCreator(start_date, end_date, field), HttpStatus.OK);
     }
 }

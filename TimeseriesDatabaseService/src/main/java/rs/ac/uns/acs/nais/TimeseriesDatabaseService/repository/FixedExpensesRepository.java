@@ -10,4 +10,5 @@ public interface FixedExpensesRepository {
     Boolean save(FixedExpenses fixedExpenses);
     Boolean delete(String creatorId, Instant time);
     List<FixedExpenses> monthlySum(String startDate, String field);
+    List<FixedExpenses> aggregateByCreator(String startDate, String endDate, String field);
 }

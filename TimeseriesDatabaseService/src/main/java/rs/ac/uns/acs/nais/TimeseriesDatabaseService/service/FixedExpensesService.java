@@ -27,4 +27,8 @@ public class FixedExpensesService {
     public List<FixedExpenses> monthlySum(String startDate, String field) {
         return fixedExpensesRepository.monthlySum(startDate, field);
     }
+
+    public List<FixedExpenses> aggregateByCreator(String startDate, String endDate, String field) {
+        return fixedExpensesRepository.aggregateByCreator(startDate, endDate, field);
+    }
 }
