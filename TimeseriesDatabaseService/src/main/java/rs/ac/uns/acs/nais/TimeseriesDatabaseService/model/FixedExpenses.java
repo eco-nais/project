@@ -21,22 +21,16 @@ public class FixedExpenses {
     private String creator_id;
 
     @Column(tag = true)
-    private Boolean deleted; // Flag for soft delete
+    private String employee; // Employee ID or reference
 
     @Column(tag = true)
-    private Integer employee; // Employee ID or reference
+    private String start_date;
 
-    @Column
-    private Double _overtime_hours; // Overtime hours for the expense
+    @Column(tag = true)
+    private String end_date;
 
-    @Column
-    private String _start_date; // Stored as string
-
-    @Column
-    private String _end_date; // Stored as string
-
-    @Column
-    private String _description;
+    @Column(tag = true)
+    private String description;
 
     public FixedExpenses() {
     }
@@ -73,51 +67,35 @@ public class FixedExpenses {
         this.creator_id = creator_id;
     }
 
-    public String get_description() {
-        return _description;
+    public String getDescription() {
+        return description;
     }
 
-    public void set_description(String _description) {
-        this._description = _description;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String get_start_date() {
-        return _start_date;
+    public String getStart_date() {
+        return start_date;
     }
 
-    public void set_start_date(String _start_date) {
-        this._start_date = _start_date;
+    public void setStart_date(String start_date) {
+        this.start_date = start_date;
     }
 
-    public String get_end_date() {
-        return _end_date;
+    public String getEnd_date() {
+        return end_date;
     }
 
-    public void set_end_date(String _end_date) {
-        this._end_date = _end_date;
+    public void setEnd_date(String end_date) {
+        this.end_date = end_date;
     }
 
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public Integer getEmployee() {
+    public String getEmployee() {
         return employee;
     }
 
-    public void setEmployee(Integer employee) {
+    public void setEmployee(String employee) {
         this.employee = employee;
-    }
-
-    public Double get_overtime_hours() {
-        return _overtime_hours;
-    }
-
-    public void set_overtime_hours(Double _overtime_hours) {
-        this._overtime_hours = _overtime_hours;
     }
 }

@@ -28,6 +28,14 @@ public class FixedExpensesRepositoryImpl implements FixedExpensesRepository {
     }
 
     @Override
+    public Boolean delete(String creatorId, Instant time) {
+        InfluxDBClient influxDBClient = inConn.buildConnection();
+        Boolean isSuccess = inConn.deleteFixedExpenses(influxDBClient, creatorId, time);
+        influxDBClient.close();
+        return isSuccess;
+    }
+
+    @Override
     public List<FixedExpenses> findAll() {
         InfluxDBClient influxDBClient = inConn.buildConnection();
         List<FixedExpenses> fixedExpenses = inConn.findAllFixedExpenses(influxDBClient);
@@ -41,11 +49,5 @@ public class FixedExpensesRepositoryImpl implements FixedExpensesRepository {
         List<FixedExpenses> fixedExpenses = inConn.findAllByCreatorId(influxDBClient, creatorId);
         influxDBClient.close();
         return fixedExpenses;
-    }
-
-    @Override
-    public Boolean softDelete(String creatorId, Instant created) {
-        // Implement soft delete logic if needed
-        return null;
     }
 }

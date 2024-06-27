@@ -8,7 +8,7 @@ import java.util.List;
 @Repository
 public interface FixedExpensesRepository {
     Boolean save(FixedExpenses fixedExpenses);
+    Boolean delete(String creatorId, Instant time);
     List<FixedExpenses> findAll();
     List<FixedExpenses> findAllByCreator(String creator_id);
-    Boolean softDelete(String creator_id, Instant created);
 }

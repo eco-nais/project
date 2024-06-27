@@ -20,6 +20,10 @@ public class FixedExpensesService {
         return fixedExpensesRepository.save(fixedExpenses);
     }
 
+    public boolean delete(String creatorId, Instant createdOn) {
+        return fixedExpensesRepository.delete(creatorId, createdOn);
+    }
+
     public List<FixedExpenses> findAll() {
         System.out.println("All fixed expenses found!");
         return fixedExpensesRepository.findAll();
@@ -27,10 +31,5 @@ public class FixedExpensesService {
 
     public List<FixedExpenses> findAllByCreator(String creatorId) {
         return fixedExpensesRepository.findAllByCreator(creatorId);
-    }
-
-    public boolean softDelete(String creatorId, Instant createdOn) {
-        // Implement soft delete logic if needed
-        return false;
     }
 }

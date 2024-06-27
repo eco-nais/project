@@ -11,24 +11,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/fixed-expenses.json")
-//http://{docker_container_ip}:9090/fixed-expenses.json
-//http://host.docker.internal:9090/fixed-expenses.json
 public class FixedExpensesController {
 
     private final FixedExpensesService service;
 
     public FixedExpensesController(FixedExpensesService fixedExpensesService) {
         this.service = fixedExpensesService;
-    }
-
-    @GetMapping("findAll")
-    public ResponseEntity<List<FixedExpenses>> findAll() {
-        return new ResponseEntity<>(service.findAll(), HttpStatus.OK);
-    }
-
-    @GetMapping("findAllByCreator")
-    public ResponseEntity<List<FixedExpenses>> findAllByCreator(@RequestParam("creatorId") String creatorId) {
-        return new ResponseEntity<>(service.findAllByCreator(creatorId), HttpStatus.OK);
     }
 
     @PostMapping("save")
@@ -41,13 +29,23 @@ public class FixedExpensesController {
     }
 
     // Example endpoint for soft deleting FixedExpenses, if needed
-    @DeleteMapping("softDelete")
-    public ResponseEntity<Boolean> softDelete(@RequestParam("creatorId") String creatorId,
+    @DeleteMapping("delete")
+    public ResponseEntity<Boolean> delete(@RequestParam("creatorId") String creatorId,
                                               @RequestParam("createdOn") Instant createdOn) {
-        if (service.softDelete(creatorId, createdOn)) {
+        if (service.delete(creatorId, createdOn)) {
             return new ResponseEntity<>(true, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("findAll")
+    public ResponseEntity<List<FixedExpenses>> findAll() {
+        return new ResponseEntity<>(service.findAll(), HttpStatus.OK);
+    }
+
+    @GetMapping("findAllByCreator")
+    public ResponseEntity<List<FixedExpenses>> findAllByCreator(@RequestParam("creatorId") String creatorId) {
+        return new ResponseEntity<>(service.findAllByCreator(creatorId), HttpStatus.OK);
     }
 }
