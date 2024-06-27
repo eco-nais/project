@@ -241,4 +241,46 @@ public class InfluxDBConnectionClass {
         List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
         return fixedExpenses;
     }
+    
+    // TODO
+    // monthlyExpenses = from(bucket: "nais_bucket")
+    //   |> range(start: 0)
+    //   |> filter(fn: (r) => r["_measurement"] == "fixed_expenses")
+    //   |> group(columns: ["start_date"])
+    //   |> aggregateWindow(every: 1mo, fn: mean, createEmpty: false)
+    //   |> map(fn: (r) => ({ r with monthly: r._value }))
+    //   |> yield(name: "monthlyExpenses")
+
+    // monthlyChanges = monthlyExpenses
+    //   |> derivative(unit: 1mo, columns: ["monthly"])
+    //   |> map(fn: (r) => ({ r with monthlyChanges: r._value }))
+    //   |> drop(columns: ["monthly"])
+    //   |> yield(name: "monthlyChanges")
+
+    // averageChange = monthlyChanges
+    //   |> mean(column: "monthlyChanges")
+    //   |> yield(name: "averageChange")
+    //   |> keep(columns: ["averageChange "])
+    public List<FixedExpenses> averageChangesByMonth(InfluxDBClient influxDBClient) {
+
+    String flux = String.format(
+            "from(bucket:\"nais_bucket\") " +
+            "|> range(start: 0) " +
+            "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\") " +
+            "|> group(columns: [\"start_date\"]) " +
+            "|> aggregateWindow(every: 1mo, fn: mean, createEmpty: false) " +
+            "|> map(fn: (r) => ({ r with monthly: r._value })) " +
+            "|> derivative(unit: 1mo, columns: [\"monthly\"]) " +
+            "|> map(fn: (r) => ({ r with monthlyChanges: r._value })) " +
+            "|> drop(columns: [\"monthly\"]) " +
+            "|> mean(column: \"monthlyChanges\") " +
+            "|> map(fn: (r) => ({ r with averageChange: r._value })) " +
+            "|> keep(columns: [\"_time\", \"averageChange\"]) " +
+            "|> yield(name: \"averageChange\")"
+        );
+
+        QueryApi queryApi = influxDBClient.getQueryApi();
+        List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
+        return fixedExpenses;
+    }
 }
