@@ -243,6 +243,33 @@ public class FixedExpensesController {
         }
     }
 
+    @Operation(summary = "Generate second simple PDF report for Fixed Expenses")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Generated second simple PDF report for Fixed Expenses", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(mediaType = "text/plain"))
+    })
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    @GetMapping(value = "/pdf/fixed-expenses-2", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<Resource> generateSimple2FixedExpensesPDF(
+            @RequestParam(name = "filename", required = false, defaultValue = "generated.pdf") String filename
+    ) {
+        String url = timeseriesServiceUrl + "/pdfs/simple2?filename=" + filename;
+        //String url = timeseriesServiceUrl + "/fixed-expenses.json/averageSalary?start_date=" + startDate;
+
+        // Send GET request to generate PDF
+        ResponseEntity<Resource> response = restTemplate.exchange(
+                url, HttpMethod.GET, null, Resource.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(response.getBody());
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
     @Operation(summary = "Generate average salary PDF report")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Generated average salary PDF report",

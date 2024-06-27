@@ -36,6 +36,22 @@ public class FixedExpensesPDFController {
         }
     }
 
+    @GetMapping(value = "/simple2", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<Resource> generateSimple2FixedExpensesPDF(
+            @RequestParam(name = "filename", required = false, defaultValue = "generated.pdf") String filename
+    ) {
+        try {
+            Resource result = service.generateSimple2FixedExpensesPDF();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .body(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
     @GetMapping(value = "/average-salary", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<Resource> generateAverageSalaryPDF(
             @RequestParam(name = "filename", required = false, defaultValue = "generated.pdf") String filename

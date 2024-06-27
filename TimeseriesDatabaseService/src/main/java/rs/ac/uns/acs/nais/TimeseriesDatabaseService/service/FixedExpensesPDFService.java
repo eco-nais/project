@@ -18,6 +18,10 @@ public class FixedExpensesPDFService {
         return repository.generateSimpleFixedExpensesPDF();
     }
 
+    public Resource generateSimple2FixedExpensesPDF() throws IOException {
+        return repository.generateSimple2FixedExpensesPDF();
+    }
+
     public Resource generateAverageSalaryPDF() throws IOException {
         return repository.generateAverageSalaryPDF();
     }

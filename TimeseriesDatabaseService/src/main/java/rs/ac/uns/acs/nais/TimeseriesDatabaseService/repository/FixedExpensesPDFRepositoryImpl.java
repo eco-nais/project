@@ -60,6 +60,22 @@ public class FixedExpensesPDFRepositoryImpl implements FixedExpensesPDFRepositor
         return PDFGenerator.generatePDF(result, title, text, columns, fixedExpensesColumnMappings, "Total Amount:" + totalAmount);
     }
 
+    private List<FixedExpenses> simpleQuery2ForPDF() {
+        InfluxDBClient influxDBClient = inConn.buildConnection();
+        List<FixedExpenses> result = inConn.simpleQuery2ForPDF(influxDBClient);
+        influxDBClient.close();
+        return result;
+    }
+    @Override
+    public Resource generateSimple2FixedExpensesPDF() throws IOException {
+        List<FixedExpenses> result = simpleQuery2ForPDF();
+        List<String> columns = List.of("number", "_field", "description", "_value");
+        String text = "Generated simple PDF for salaries for employee 6. \nThis query fetches fixed expenses data from the 'fixed_expenses' measurement in the 'nais_bucket' InfluxDB database, sorted in ascending order based on the _value field";
+        String title = "Fixed Expenses PDF - employee 6 - year 2022";
+        double totalAmount = calculateTotalAmount(result);
+        return PDFGenerator.generatePDF(result, title, text, columns, fixedExpensesColumnMappings, "Total Amount:" + totalAmount);
+    }
+
     private List<FixedExpenses> averageSalary() {
         InfluxDBClient influxDBClient = inConn.buildConnection();
         List<FixedExpenses> result = inConn.averageSalary(influxDBClient, null, null);
