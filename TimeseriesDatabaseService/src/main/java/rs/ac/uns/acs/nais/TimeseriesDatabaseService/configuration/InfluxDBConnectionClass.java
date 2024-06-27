@@ -129,6 +129,8 @@ public class InfluxDBConnectionClass {
         return flag;
     }
 
+   
+
     // TODO
     private List<FixedExpenses> getFixedExpenses(QueryApi queryApi, String flux) {
         List<FixedExpenses> fixedExpenses = new ArrayList<>();
@@ -146,24 +148,32 @@ public class InfluxDBConnectionClass {
                 fixedExpense.setEnd_date((String) fluxRecord.getValueByKey("end_date"));
                 fixedExpense.setDescription((String) fluxRecord.getValueByKey("description"));
 
+                // Ensure all expected columns are included
+                if (fixedExpense.getCreator_id() == null) fixedExpense.setCreator_id("5");
+                if (fixedExpense.getEmployee() == null) fixedExpense.setEmployee("");
+                if (fixedExpense.getStart_date() == null) fixedExpense.setStart_date("-");
+                if (fixedExpense.getEnd_date() == null) fixedExpense.setEnd_date("-");
+                if (fixedExpense.getDescription() == null) fixedExpense.setDescription("Fixed Expense");
+
                 fixedExpenses.add(fixedExpense);
             }
         }
         return fixedExpenses;
     }
 
-    public List<FixedExpenses> findAllFixedExpenses(InfluxDBClient influxDBClient) {
-        String flux = "from(bucket:\"nais_bucket\") |> range(start:0) |> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\") |> sort() |> yield(name: \"sort\")";
-        QueryApi queryApi = influxDBClient.getQueryApi();
-        List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
-        return fixedExpenses;
-    }
+    public List<FixedExpenses> monthlySum(InfluxDBClient influxDBClient, String startDate, String field) {
+        String flux = String.format(
+            "from(bucket:\"nais_bucket\") " +
+                "|> range(start: %s) " +
+                "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"_field\"] == \"%s\") " +
+                "|> group(columns: [\"start_date\"]) " +
+                "|> sum(column: \"_value\") " +
+                "|> sort(columns: [\"_value\"], desc: true) " +
+                //"|> keep(columns: [\"_time\", \"_value\", \"_field\", \"_measurement\", \"start_date\", \"end_date\", \"employee\", \"creator_id\", \"description\"])",
+                startDate, field);
 
-    public List<FixedExpenses> findAllByCreatorId(InfluxDBClient influxDBClient, String creatorId) {
-        String fluxForCreator = "from(bucket:\"nais_bucket\") |> range(start:0) |> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"creator_id\"] == \"%s\") |> sort() |> yield(name: \"sort\")";
-        String queryForCreator = String.format(fluxForCreator, creatorId);
-        QueryApi queryApi = influxDBClient.getQueryApi();
-        List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, queryForCreator);
+                QueryApi queryApi = influxDBClient.getQueryApi();
+        List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
         return fixedExpenses;
     }
 }

@@ -24,12 +24,7 @@ public class FixedExpensesService {
         return fixedExpensesRepository.delete(creatorId, createdOn);
     }
 
-    public List<FixedExpenses> findAll() {
-        System.out.println("All fixed expenses found!");
-        return fixedExpensesRepository.findAll();
-    }
-
-    public List<FixedExpenses> findAllByCreator(String creatorId) {
-        return fixedExpensesRepository.findAllByCreator(creatorId);
+    public List<FixedExpenses> monthlySum(String startDate, String field) {
+        return fixedExpensesRepository.monthlySum(startDate, field);
     }
 }

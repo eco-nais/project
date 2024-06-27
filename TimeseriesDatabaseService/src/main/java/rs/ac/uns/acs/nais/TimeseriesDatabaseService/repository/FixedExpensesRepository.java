@@ -9,6 +9,5 @@ import java.util.List;
 public interface FixedExpensesRepository {
     Boolean save(FixedExpenses fixedExpenses);
     Boolean delete(String creatorId, Instant time);
-    List<FixedExpenses> findAll();
-    List<FixedExpenses> findAllByCreator(String creator_id);
+    List<FixedExpenses> monthlySum(String startDate, String field);
 }

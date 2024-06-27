@@ -28,7 +28,6 @@ public class FixedExpensesController {
         }
     }
 
-    // Example endpoint for soft deleting FixedExpenses, if needed
     @DeleteMapping("delete")
     public ResponseEntity<Boolean> delete(@RequestParam("creatorId") String creatorId,
                                               @RequestParam("createdOn") Instant createdOn) {
@@ -39,13 +38,8 @@ public class FixedExpensesController {
         }
     }
 
-    @GetMapping("findAll")
-    public ResponseEntity<List<FixedExpenses>> findAll() {
-        return new ResponseEntity<>(service.findAll(), HttpStatus.OK);
-    }
-
-    @GetMapping("findAllByCreator")
-    public ResponseEntity<List<FixedExpenses>> findAllByCreator(@RequestParam("creatorId") String creatorId) {
-        return new ResponseEntity<>(service.findAllByCreator(creatorId), HttpStatus.OK);
+    @GetMapping("monthly")
+    public ResponseEntity<List<FixedExpenses>> findAll(@RequestParam("start_date") String start_date, @RequestParam("field") String field) {
+        return new ResponseEntity<>(service.monthlySum(start_date, field), HttpStatus.OK);
     }
 }

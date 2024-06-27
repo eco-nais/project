@@ -36,18 +36,10 @@ public class FixedExpensesRepositoryImpl implements FixedExpensesRepository {
     }
 
     @Override
-    public List<FixedExpenses> findAll() {
+    public List<FixedExpenses> monthlySum(String startDate, String field) {
         InfluxDBClient influxDBClient = inConn.buildConnection();
-        List<FixedExpenses> fixedExpenses = inConn.findAllFixedExpenses(influxDBClient);
+        List<FixedExpenses> result = inConn.monthlySum(influxDBClient, startDate, field);
         influxDBClient.close();
-        return fixedExpenses;
-    }
-
-    @Override
-    public List<FixedExpenses> findAllByCreator(String creatorId) {
-        InfluxDBClient influxDBClient = inConn.buildConnection();
-        List<FixedExpenses> fixedExpenses = inConn.findAllByCreatorId(influxDBClient, creatorId);
-        influxDBClient.close();
-        return fixedExpenses;
+        return result;
     }
 }
