@@ -31,4 +31,8 @@ public class FixedExpensesService {
     public List<FixedExpenses> aggregateByCreator(String startDate, String endDate, String field) {
         return fixedExpensesRepository.aggregateByCreator(startDate, endDate, field);
     }
+
+    public List<FixedExpenses> averageSalary(String startDate, String endDate) {
+        return fixedExpensesRepository.averageSalary(startDate, endDate);
+    }
 }

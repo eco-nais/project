@@ -214,4 +214,31 @@ public class InfluxDBConnectionClass {
         List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
         return fixedExpenses;
     }
+
+    public List<FixedExpenses> averageSalary(InfluxDBClient influxDBClient, String startDate, String endDate) {
+        String flux = "";
+        if (startDate != null && endDate == null) {
+            flux = String.format(
+                    "from(bucket:\"nais_bucket\") " +
+                            "|> range(start: 0) " +
+                            "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"_field\"] == \"SALARY\") " +
+                            "|> group(columns: [\"employee\"]) " + // Group by creator_id
+                            "|> mean(column: \"_value\") " + // Perform aggregation, e.g., sum // i would like some other type of aggreagation please
+                            "|> sort(columns: [\"employee\"]) ",
+                    startDate);
+        } else {
+            flux = String.format(
+                    "from(bucket:\"nais_bucket\") " +
+                            "|> range(start: 0) " +
+                            "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"_field\"] == \"SALARY\") " +
+                            "|> group(columns: [\"employee\"]) " + // Group by creator_id
+                            "|> mean(column: \"_value\") " + // Perform aggregation, e.g., sum // i would like some other type of aggreagation please
+                            "|> sort(columns: [\"employee\"]) ",
+                    startDate, endDate);
+        }
+
+        QueryApi queryApi = influxDBClient.getQueryApi();
+        List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
+        return fixedExpenses;
+    }
 }

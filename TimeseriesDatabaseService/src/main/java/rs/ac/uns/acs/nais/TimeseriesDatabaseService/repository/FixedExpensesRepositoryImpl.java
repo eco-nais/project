@@ -50,4 +50,12 @@ public class FixedExpensesRepositoryImpl implements FixedExpensesRepository {
         influxDBClient.close();
         return result;
     }
+
+    @Override
+    public List<FixedExpenses> averageSalary(String startDate, String endDate) {
+        InfluxDBClient influxDBClient = inConn.buildConnection();
+        List<FixedExpenses> result = inConn.averageSalary(influxDBClient, startDate, endDate);
+        influxDBClient.close();
+        return result;
+    }
 }

@@ -50,4 +50,11 @@ public class FixedExpensesController {
             @RequestParam(value = "field", defaultValue = "SALARY") String field) {
         return new ResponseEntity<>(service.aggregateByCreator(start_date, end_date, field), HttpStatus.OK);
     }
+
+    @GetMapping("averageSalary")
+    public ResponseEntity<List<FixedExpenses>> averageSalary(
+            @RequestParam(value = "start_date", defaultValue = "0") String start_date,
+            @RequestParam(value = "end_date", required = false) String end_date) {
+        return new ResponseEntity<>(service.averageSalary(start_date, end_date), HttpStatus.OK);
+    }
 }

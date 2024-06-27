@@ -11,4 +11,5 @@ public interface FixedExpensesRepository {
     Boolean delete(String creatorId, Instant time);
     List<FixedExpenses> monthlySum(String startDate, String field);
     List<FixedExpenses> aggregateByCreator(String startDate, String endDate, String field);
+    List<FixedExpenses> averageSalary(String startDate, String endDate);
 }

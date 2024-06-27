@@ -183,4 +183,44 @@ public class FixedExpensesController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+    @Operation(summary = "Get Average Salary for employees")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Average Salary retrieved successfully",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FixedExpensesDto.class)) }),
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Not Found",
+                    content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = @Content)
+    })
+    @GetMapping(value = "/average-salary", produces = "application/json")
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    public ResponseEntity<List<TimeseriesFixedExpensesDto>> getAverageSalary(
+            @RequestParam(value = "start_date", defaultValue = "0") String startDate,
+            @RequestParam(value = "end_date", required = false) String endDate) {
+        // Forward the request to the TimeseriesDatabaseService
+        String url = timeseriesServiceUrl + "/fixed-expenses.json/averageSalary?start_date=" + startDate;
+
+        // Append endDate if provided
+        if (endDate != null) {
+            url += "&end_date=" + endDate;
+        }
+
+        ResponseEntity<List<TimeseriesFixedExpensesDto>> response = restTemplate.exchange(
+                url, HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<TimeseriesFixedExpensesDto>>() {});
+
+        if (response.getBody() != null) {
+            return ResponseEntity.ok(response.getBody());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 }
