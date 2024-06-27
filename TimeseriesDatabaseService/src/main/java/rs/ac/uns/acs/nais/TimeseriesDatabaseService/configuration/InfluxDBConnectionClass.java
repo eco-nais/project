@@ -283,4 +283,16 @@ public class InfluxDBConnectionClass {
         List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
         return fixedExpenses;
     }
+    public List<FixedExpenses> simpleQueryForPDF(InfluxDBClient influxDBClient) {
+        String flux = String.format(
+                "from(bucket:\"nais_bucket\") " +
+                        "|> range(start: 0) " +
+                        "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\") " +
+                        "|> sort(columns: [{column: \"_value\", desc: false}])"
+        );
+
+        QueryApi queryApi = influxDBClient.getQueryApi();
+        List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
+        return fixedExpenses;
+    }
 }

@@ -1,8 +1,8 @@
 package com.eco.environet.finance.controller;
 
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import com.eco.environet.finance.dto.FixedExpensesDto;
 import com.eco.environet.finance.dto.TimeseriesFixedExpensesDto;
@@ -14,16 +14,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
@@ -33,8 +27,6 @@ import java.util.List;
 public class FixedExpensesController {
     private final RestTemplate restTemplate;
     private String timeseriesServiceUrl = "http://host.docker.internal:9090";
-//    @Value("${timeseries.service.url}")
-//    private String timeseriesServiceUrl; // cant i just put http://host.docker.internal:9090 here
 
     public FixedExpensesController(FixedExpensesService service) {
         this.restTemplate = new RestTemplate();
@@ -221,6 +213,58 @@ public class FixedExpensesController {
             return ResponseEntity.ok(response.getBody());
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @Operation(summary = "Generate simple PDF report for Fixed Expenses")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Generated simple PDF report for Fixed Expenses", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(mediaType = "text/plain"))
+    })
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    @GetMapping(value = "/pdf/fixed-expenses", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<Resource> generateSimpleFixedExpensesPDF(
+            @RequestParam(name = "filename", required = false, defaultValue = "generated.pdf") String filename
+    ) {
+        String url = timeseriesServiceUrl + "/pdfs/simple?filename=" + filename;
+
+        // Send GET request to generate PDF
+        ResponseEntity<Resource> response = restTemplate.exchange(
+                url, HttpMethod.GET, null, Resource.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(response.getBody());
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @Operation(summary = "Generate average salary PDF report")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Generated average salary PDF report",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    @GetMapping(value = "/pdf/average-salary", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<Resource> generateAverageSalaryPDF(
+            @RequestParam(name = "filename", required = false, defaultValue = "average_salary.pdf") String filename
+    ) {
+        String url = timeseriesServiceUrl + "/pdfs/average-salary?filename=" + filename;
+
+        // Send GET request to generate PDF
+        ResponseEntity<Resource> response = restTemplate.exchange(
+                url, HttpMethod.GET, null, Resource.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(response.getBody());
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }

@@ -27,32 +27,32 @@ import org.springframework.web.bind.annotation.*;
 public class PDFGeneratorController {
     private final FinancePDFGeneratorService generatorService;
 
-    @Operation(summary = "Generate PDF report for Fixed Expenses")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Generated PDF report for Fixed Expenses", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(mediaType = "text/plain"))
-    })
-    @PreAuthorize("hasAnyRole('BOARD_MEMBER', 'ACCOUNTANT')")
-    @PostMapping(value = "/fixed-expenses", consumes = "application/json")
-    public ResponseEntity<Resource> createNewRevenue(
-            @RequestBody List<FixedExpensesDto> fixedExpensesDtos,
-            @RequestParam(name = "filename", required = false, defaultValue = "generated.pdf") String filename,
-            @RequestParam(name = "columns", required = false) List<String> columns,
-            @RequestParam(name = "title", required = false, defaultValue = "Generated PDF") String title,
-            @RequestParam(name = "text", required = false) String text
-    ) {
-        try {
-            Resource result = generatorService.generateFixedExpensesPDF(fixedExpensesDtos, title ,text, columns);
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .body(result);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
+//    @Operation(summary = "Generate PDF report for Fixed Expenses")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Generated PDF report for Fixed Expenses", content = @Content(mediaType = "application/json")),
+//            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(mediaType = "text/plain"))
+//    })
+//    @PreAuthorize("hasAnyRole('BOARD_MEMBER', 'ACCOUNTANT')")
+//    @PostMapping(value = "/fixed-expenses", consumes = "application/json")
+//    public ResponseEntity<Resource> createNewRevenue(
+//            @RequestBody List<FixedExpensesDto> fixedExpensesDtos,
+//            @RequestParam(name = "filename", required = false, defaultValue = "generated.pdf") String filename,
+//            @RequestParam(name = "columns", required = false) List<String> columns,
+//            @RequestParam(name = "title", required = false, defaultValue = "Generated PDF") String title,
+//            @RequestParam(name = "text", required = false) String text
+//    ) {
+//        try {
+//            Resource result = generatorService.generateFixedExpensesPDF(fixedExpensesDtos, title ,text, columns);
+//
+//            return ResponseEntity.ok()
+//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+//                    .contentType(MediaType.APPLICATION_PDF)
+//                    .body(result);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+//        }
+//    }
 
     @Operation(summary = "Generate PDF report for Revenues")
     @ApiResponses(value = {
