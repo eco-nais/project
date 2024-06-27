@@ -286,9 +286,9 @@ public class InfluxDBConnectionClass {
     public List<FixedExpenses> simpleQueryForPDF(InfluxDBClient influxDBClient) {
         String flux = String.format(
                 "from(bucket:\"nais_bucket\") " +
-                        "|> range(start: 0) " +
+                        "|> range(start: 2023-01-03T00:00:00.000Z) " +
                         "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\") " +
-                        "|> sort(columns: [{column: \"_value\", desc: false}])"
+                        "|> sort(columns: [\"_value\"], desc: false)"
         );
 
         QueryApi queryApi = influxDBClient.getQueryApi();

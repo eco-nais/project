@@ -227,6 +227,7 @@ public class FixedExpensesController {
             @RequestParam(name = "filename", required = false, defaultValue = "generated.pdf") String filename
     ) {
         String url = timeseriesServiceUrl + "/pdfs/simple?filename=" + filename;
+        //String url = timeseriesServiceUrl + "/fixed-expenses.json/averageSalary?start_date=" + startDate;
 
         // Send GET request to generate PDF
         ResponseEntity<Resource> response = restTemplate.exchange(

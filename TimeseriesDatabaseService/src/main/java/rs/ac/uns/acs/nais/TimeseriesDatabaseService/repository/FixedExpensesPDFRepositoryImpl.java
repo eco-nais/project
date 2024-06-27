@@ -70,9 +70,8 @@ public class FixedExpensesPDFRepositoryImpl implements FixedExpensesPDFRepositor
     public Resource generateAverageSalaryPDF() throws IOException {
         List<FixedExpenses> result = averageSalary();
         List<String> columns = List.of("number", "employee", "_value");
-        String paragraph = "Generated PDF for average salary of employees. \nThis PDF contains aggregated salary data from the 'fixed_expenses' measurement in the 'nais_bucket' InfluxDB database. The salaries are averaged across employees and all available time ranges.";
+        String paragraph = "Generated PDF for average salary of employees. \nThis PDF contains aggregated salary data from the 'fixed_expenses' measurement in the 'nais_bucket' InfluxDB database. The salaries are averaged across employees for the time range starting from 2023-01-03T00:00:00.000Z and beyond.";
         String title = "Fixed Expenses PDF - simple";
-        double totalAmount = calculateTotalAmount(result);
-        return PDFGenerator.generatePDF(result, title, paragraph, columns, fixedExpensesColumnMappings, "Total Amount:" + totalAmount);
+        return PDFGenerator.generatePDF(result, title, paragraph, columns, fixedExpensesColumnMappings);
     }
 }
