@@ -162,15 +162,26 @@ public class InfluxDBConnectionClass {
     }
 
     public List<FixedExpenses> monthlySum(InfluxDBClient influxDBClient, String startDate, String field) {
-        String flux = String.format(
-            "from(bucket:\"nais_bucket\") " +
-                "|> range(start: %s) " +
-                "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"_field\"] == \"%s\") " +
-                "|> group(columns: [\"start_date\"]) " +
-                "|> sum(column: \"_value\") " +
-                "|> sort(columns: [\"_value\"], desc: true) " +
-                startDate, field);
-
+        String flux = "";
+        if (startDate == null || startDate.equals("0")) {
+            flux = String.format(
+                    "from(bucket:\"nais_bucket\") " +
+                            "|> range(start: 0)" +
+                            "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"_field\"] == \"%s\") " +
+                            "|> group(columns: [\"start_date\"]) " +
+                            "|> sum(column: \"_value\") " +
+                            "|> sort(columns: [\"_value\"], desc: true) " +
+                    field);
+        } else {
+            flux = String.format(
+                    "from(bucket:\"nais_bucket\") " +
+                            "|> range(start: \"%s\") " +
+                            "|> filter(fn: (r) => r[\"_measurement\"] == \"fixed_expenses\" and r[\"_field\"] == \"%s\") " +
+                            "|> group(columns: [\"start_date\"]) " +
+                            "|> sum(column: \"_value\") " +
+                            "|> sort(columns: [\"_value\"], desc: true) " +
+                            startDate, field);
+        }
                 QueryApi queryApi = influxDBClient.getQueryApi();
         List<FixedExpenses> fixedExpenses = getFixedExpenses(queryApi, flux);
         return fixedExpenses;
